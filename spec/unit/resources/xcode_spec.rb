@@ -7,7 +7,7 @@ describe 'xcode' do
   default_attributes['macos']['apple_id']['user'] = 'developer@apple.com'
   default_attributes['macos']['apple_id']['password'] = 'apple_id_password'
 
-  before(:each) do
+  before do
     allow_any_instance_of(MacOS::DeveloperAccount).to receive(:authenticate_with_apple)
       .and_return(true)
     allow(MacOS::XCVersion).to receive(:available_versions)
@@ -70,7 +70,7 @@ describe 'xcode' do
   end
 
   context 'with no Xcodes installed' do
-    before(:each) do
+    before do
       allow(MacOS::XCVersion).to receive(:installed_xcodes)
         .and_return([])
       stub_command('test -L /Applications/Xcode.app').and_return(true)
@@ -82,13 +82,12 @@ describe 'xcode' do
 
     it { is_expected.to run_execute('install Xcode 10') }
     it { is_expected.to delete_link('/Applications/Xcode.app') }
-
     it { is_expected.to run_execute('move /Applications/Xcode-10.app to /Applications/Xcode.app') }
     it { is_expected.to run_execute('switch active Xcode to /Applications/Xcode.app') }
   end
 
   context 'with no Xcodes installed' do
-    before(:each) do
+    before do
       allow(MacOS::XCVersion).to receive(:installed_xcodes)
         .and_return([])
       stub_command('test -L /Applications/Xcode.app').and_return(true)
@@ -100,13 +99,12 @@ describe 'xcode' do
 
     it { is_expected.to run_execute('install Xcode 10') }
     it { is_expected.to delete_link('/Applications/Xcode.app') }
-
     it { is_expected.to run_execute('move /Applications/Xcode-10.app to /Applications/Xcode.app') }
     it { is_expected.to run_execute('switch active Xcode to /Applications/Xcode.app') }
   end
 
   context 'with requested Xcode installed' do
-    before(:each) do
+    before do
       allow(MacOS::XCVersion).to receive(:installed_xcodes)
         .and_return([{ '10.0' => '/Applications/Xcode.app' }])
       stub_command('test -L /Applications/Xcode.app').and_return(false)
@@ -118,7 +116,6 @@ describe 'xcode' do
 
     it { is_expected.not_to run_execute('install Xcode 10') }
     it { is_expected.not_to delete_link('/Applications/Xcode.app') }
-
     it { is_expected.not_to run_execute('move /Applications/Xcode-10.app to /Applications/Xcode.app') }
     it { is_expected.to run_execute('switch active Xcode to /Applications/Xcode.app') }
   end
@@ -138,16 +135,14 @@ describe 'xcode' do
 
     it { is_expected.not_to run_execute('install Xcode 10') }
     it { is_expected.not_to delete_link('/Applications/Xcode.app') }
-
     it { is_expected.to run_execute('move /Applications/Some_Weird_Path.app to /Applications/Chef_Managed_Xcode.app') }
     it { is_expected.to run_execute('switch active Xcode to /Applications/Chef_Managed_Xcode.app') }
   end
 
   context 'with requested Xcode version not installed, and something at the requested path' do
-    before(:each) do
+    before do
       allow(MacOS::XCVersion).to receive(:installed_xcodes)
         .and_return([{ '9.3' => '/Applications/Xcode.app' }])
-        .and_return(false)
       stub_command('test -L /Applications/Xcode.app').and_return(true)
     end
 
@@ -159,7 +154,6 @@ describe 'xcode' do
 
     it { is_expected.to run_execute('install Xcode 10') }
     it { is_expected.to delete_link('/Applications/Xcode.app') }
-
     it { is_expected.to run_execute('move /Applications/Xcode-10.app to /Applications/Xcode.app') }
     it { is_expected.to run_execute('switch active Xcode to /Applications/Xcode.app') }
   end

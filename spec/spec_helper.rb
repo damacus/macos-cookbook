@@ -8,7 +8,6 @@ require_relative '../libraries/system'
 require_relative '../libraries/xcode'
 require_relative '../libraries/xcversion'
 require_relative '../libraries/developer_account'
-require_relative '../libraries/command_line_tools'
 require_relative '../libraries/security_cmd'
 require_relative '../libraries/ard'
 
