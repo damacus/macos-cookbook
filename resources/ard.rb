@@ -1,4 +1,5 @@
 resource_name :ard
+default_action %i(activate configure)
 
 BASE_COMMAND = '/System/Library/CoreServices/RemoteManagement/ARDAgent.app/Contents/Resources/kickstart'.freeze
 
@@ -16,6 +17,7 @@ property :clientopts, Array
 action :activate do
   execute BASE_COMMAND do
     command "#{BASE_COMMAND} -activate"
+    not_if { ard_already_activated? }
   end
 end
 
@@ -71,5 +73,6 @@ action :configure do
   end
   execute BASE_COMMAND do
     command "#{BASE_COMMAND} -configure #{configure_options.join(' ')}"
+    not_if { ard_already_configured?(configure_options) }
   end
 end
