@@ -2,21 +2,203 @@
 resources:
 - repo: self
   clean: true
-pool:
-  name: ApexInfra macOS
-jobs:
-- job: A
-  steps:
-  - script: kitchen list --bare | tr '\n' , | rev | cut -c 2- | rev "##vso[task.setvariable variable=kitchen_suites;isOutput=true]"
-    name: findKitchenSuites
 
-- job: B
-  dependsOn: A
+name: $(DayOfYear).$(BuildID)
+
+jobs:
+- job: Unit
+  displayName: Chef Linting and Unit Tests
+  pool:
+    name: ApexInfra Linux
+  steps:
+  - task: chef-software.vsts-chef-tasks.vsts-chef-task-install-chefdk.vsts-chef-task-install-chefdk@1
+    displayName: 'Install ChefDK (Current)'
+    inputs:
+      chefDKForceInstall: true
+
+  - script: 'chef exec cookstyle  --extra-details --no-color'
+    displayName: Run Chef Cookstyle
+    failOnStderr: true
+
+  - script: 'chef exec foodcritic .'
+    displayName: Run Foodcritic
+    failOnStderr: true
+
+  - script: 'chef exec rspec --no-color --format RspecJunitFormatter --out /tmp/rspec.xml'
+    displayName: Run ChefSpec
+    failOnStderr: true
+
+  - task: PublishTestResults@2
+    inputs:
+        testResultsFormat: JUnit
+        testResultsFiles: /tmp/rspec.xml
+jobs:
+- job: Integration
+  pool: ApexInfra macOS
+  workspace:
+    clean: all
   strategy:
-    maxParallel: 4
-    parallel: 4
-  variables:
-    kitchen_suites: $[ dependencies.A.outputs['findKitchenSuites.kitchen_suites'] ]
+    matrix:
+      default-el-capitan-chef13:
+        kitchen_instance: default-el-capitan-chef13
+      default-el-capitan-chef14:
+        kitchen_instance: default-el-capitan-chef14
+      default-sierra-chef13:
+        kitchen_instance: default-sierra-chef13
+      default-sierra-chef14:
+        kitchen_instance: default-sierra-chef14
+      default-high-sierra-chef13:
+        kitchen_instance: default-high-sierra-chef13
+      default-high-sierra-chef14:
+        kitchen_instance: default-high-sierra-chef14
+      default-mojave-chef13:
+        kitchen_instance: default-mojave-chef13
+      default-mojave-chef14:
+        kitchen_instance: default-mojave-chef14
+      power-management-el-capitan-chef13:
+        kitchen_instance: power-management-el-capitan-chef13
+      power-management-el-capitan-chef14:
+        kitchen_instance: power-management-el-capitan-chef14
+      power-management-sierra-chef13:
+        kitchen_instance: power-management-sierra-chef13
+      power-management-sierra-chef14:
+        kitchen_instance: power-management-sierra-chef14
+      power-management-high-sierra-chef13:
+        kitchen_instance: power-management-high-sierra-chef13
+      power-management-high-sierra-chef14:
+        kitchen_instance: power-management-high-sierra-chef14
+      power-management-mojave-chef13:
+        kitchen_instance: power-management-mojave-chef13
+      power-management-mojave-chef14:
+        kitchen_instance: power-management-mojave-chef14
+      machine-name-el-capitan-chef13:
+        kitchen_instance: machine-name-el-capitan-chef13
+      machine-name-el-capitan-chef14:
+        kitchen_instance: machine-name-el-capitan-chef14
+      machine-name-sierra-chef13:
+        kitchen_instance: machine-name-sierra-chef13
+      machine-name-sierra-chef14:
+        kitchen_instance: machine-name-sierra-chef14
+      machine-name-high-sierra-chef13:
+        kitchen_instance: machine-name-high-sierra-chef13
+      machine-name-high-sierra-chef14:
+        kitchen_instance: machine-name-high-sierra-chef14
+      machine-name-mojave-chef13:
+        kitchen_instance: machine-name-mojave-chef13
+      machine-name-mojave-chef14:
+        kitchen_instance: machine-name-mojave-chef14
+      spotlight-el-capitan-chef13:
+        kitchen_instance: spotlight-el-capitan-chef13
+      spotlight-el-capitan-chef14:
+        kitchen_instance: spotlight-el-capitan-chef14
+      spotlight-sierra-chef13:
+        kitchen_instance: spotlight-sierra-chef13
+      spotlight-sierra-chef14:
+        kitchen_instance: spotlight-sierra-chef14
+      spotlight-high-sierra-chef13:
+        kitchen_instance: spotlight-high-sierra-chef13
+      spotlight-high-sierra-chef14:
+        kitchen_instance: spotlight-high-sierra-chef14
+      spotlight-mojave-chef13:
+        kitchen_instance: spotlight-mojave-chef13
+      spotlight-mojave-chef14:
+        kitchen_instance: spotlight-mojave-chef14
+      xcode-el-capitan-chef13:
+        kitchen_instance: xcode-el-capitan-chef13
+      xcode-el-capitan-chef14:
+        kitchen_instance: xcode-el-capitan-chef14
+      xcode-sierra-chef13:
+        kitchen_instance: xcode-sierra-chef13
+      xcode-sierra-chef14:
+        kitchen_instance: xcode-sierra-chef14
+      xcode-high-sierra-chef13:
+        kitchen_instance: xcode-high-sierra-chef13
+      xcode-high-sierra-chef14:
+        kitchen_instance: xcode-high-sierra-chef14
+      xcode-mojave-chef13:
+        kitchen_instance: xcode-mojave-chef13
+      xcode-mojave-chef14:
+        kitchen_instance: xcode-mojave-chef14
+      certificate-el-capitan-chef13:
+        kitchen_instance: certificate-el-capitan-chef13
+      certificate-el-capitan-chef14:
+        kitchen_instance: certificate-el-capitan-chef14
+      certificate-sierra-chef13:
+        kitchen_instance: certificate-sierra-chef13
+      certificate-sierra-chef14:
+        kitchen_instance: certificate-sierra-chef14
+      certificate-high-sierra-chef13:
+        kitchen_instance: certificate-high-sierra-chef13
+      certificate-high-sierra-chef14:
+        kitchen_instance: certificate-high-sierra-chef14
+      certificate-mojave-chef13:
+        kitchen_instance: certificate-mojave-chef13
+      certificate-mojave-chef14:
+        kitchen_instance: certificate-mojave-chef14
+      users-el-capitan-chef13:
+        kitchen_instance: users-el-capitan-chef13
+      users-el-capitan-chef14:
+        kitchen_instance: users-el-capitan-chef14
+      users-sierra-chef13:
+        kitchen_instance: users-sierra-chef13
+      users-sierra-chef14:
+        kitchen_instance: users-sierra-chef14
+      users-high-sierra-chef13:
+        kitchen_instance: users-high-sierra-chef13
+      users-high-sierra-chef14:
+        kitchen_instance: users-high-sierra-chef14
+      users-mojave-chef13:
+        kitchen_instance: users-mojave-chef13
+      users-mojave-chef14:
+        kitchen_instance: users-mojave-chef14
+      delete-users-el-capitan-chef13:
+        kitchen_instance: delete-users-el-capitan-chef13
+      delete-users-el-capitan-chef14:
+        kitchen_instance: delete-users-el-capitan-chef14
+      delete-users-sierra-chef13:
+        kitchen_instance: delete-users-sierra-chef13
+      delete-users-sierra-chef14:
+        kitchen_instance: delete-users-sierra-chef14
+      delete-users-high-sierra-chef13:
+        kitchen_instance: delete-users-high-sierra-chef13
+      delete-users-high-sierra-chef14:
+        kitchen_instance: delete-users-high-sierra-chef14
+      delete-users-mojave-chef13:
+        kitchen_instance: delete-users-mojave-chef13
+      delete-users-mojave-chef14:
+        kitchen_instance: delete-users-mojave-chef14
+      keychain-el-capitan-chef13:
+        kitchen_instance: keychain-el-capitan-chef13
+      keychain-el-capitan-chef14:
+        kitchen_instance: keychain-el-capitan-chef14
+      keychain-sierra-chef13:
+        kitchen_instance: keychain-sierra-chef13
+      keychain-sierra-chef14:
+        kitchen_instance: keychain-sierra-chef14
+      keychain-high-sierra-chef13:
+        kitchen_instance: keychain-high-sierra-chef13
+      keychain-high-sierra-chef14:
+        kitchen_instance: keychain-high-sierra-chef14
+      keychain-mojave-chef13:
+        kitchen_instance: keychain-mojave-chef13
+      keychain-mojave-chef14:
+        kitchen_instance: keychain-mojave-chef14
+      remote-access-el-capitan-chef13:
+        kitchen_instance: remote-access-el-capitan-chef13
+      remote-access-el-capitan-chef14:
+        kitchen_instance: remote-access-el-capitan-chef14
+      remote-access-sierra-chef13:
+        kitchen_instance: remote-access-sierra-chef13
+      remote-access-sierra-chef14:
+        kitchen_instance: remote-access-sierra-chef14
+      remote-access-high-sierra-chef13:
+        kitchen_instance: remote-access-high-sierra-chef13
+      remote-access-high-sierra-chef14:
+        kitchen_instance: remote-access-high-sierra-chef14
+      remote-access-mojave-chef13:
+        kitchen_instance: remote-access-mojave-chef13
+      remote-access-mojave-chef14:
+        kitchen_instance: remote-access-mojave-chef14
   steps:
   - task: chef-software.vsts-chef-tasks.vsts-chef-task-exec-knife.vsts-chef-task-exec-knife@1
     displayName: Execute Knife
@@ -24,12 +206,14 @@ jobs:
       knifeEndpoint: Hephaestus (packer)
       knifeArguments: download /data_bags --chef-repo-path $(Build.SourcesDirectory) -u {USERNAME} -s {URL}
       knifePrivateKey: true
+
   - task: chef-software.vsts-chef-tasks.vsts-chef-task-test-kitchen.vsts-chef-task-test-kitchen@1
     displayName: 'Execute Test Kitchen: test'
     inputs:
       tkAzureEndpoint: Apex Lab - CorpNet
       tkCommand: test
-      tkPattern: $(kitchen_suites)
+      tkPattern: $(kitchen_instance)
+
   - task: chef-software.vsts-chef-tasks.vsts-chef-task-test-kitchen.vsts-chef-task-test-kitchen@1
     displayName: 'Execute Test Kitchen: destroy'
     inputs:
